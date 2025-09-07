@@ -16,8 +16,14 @@ export const Product = createApi({
                 params: {search, page, limit, categoryId}
             }),
             providesTags: ["products"],
-        })
+        }),
+        getProduct: builder.query({
+            query: (id) => ({
+                url: `/${id}`,
+                method: "GET",
+            }),
+        }),
     })
 })
 
-export const { useGetProductsQuery } = Product
+export const { useGetProductsQuery, useGetProductQuery } = Product

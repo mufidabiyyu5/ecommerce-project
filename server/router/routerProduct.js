@@ -114,6 +114,31 @@ router.get('/list', async (req, res) => {
     }
 })
 
+router.get('/:id', async (req, res) => {
+    try {
+        const { id } = req.params
+
+        let query = `
+        SELECT product.*, ROUND(AVG(review.rating), 1) AS rating, COALESCE(json_agg(
+        DISTINCT jsonb_build_object('id', image.id, 'url', image.url
+        )) FILTER (WHERE image.id IS NOT NULL), '[]') AS images, COALESCE(json_agg(
+        DISTINCT jsonb_build_object('id', review.id, 'user', users.name, 'rating', review.rating, 'comment', review.comment))
+        FILTER (WHERE review.id IS NOT NULL), '[]') AS reviews
+        FROM products AS product
+        LEFT JOIN images AS image ON product.id = image.product_id 
+        LEFT JOIN reviews AS review ON product.id = review.product_id 
+        LEFT JOIN users ON review.user_id = users.id 
+        WHERE product.id = $1 GROUP BY product.id`
+
+        const data = await client.query(query, [id])
+
+        res.status(200).json({ message: "Data retrieved successfully", result: data.rows[0] })
+    } catch (error) {
+        console.log(error)
+        res.status(500).json({ message: "Internal server error" })
+    }
+})
+
 router.delete('/delete/:id', authorize("admin"), async (req, res) => {
     try {
         const { id } = req.params;
