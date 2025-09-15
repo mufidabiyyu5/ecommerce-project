@@ -12,7 +12,10 @@ router.get('/get-provinces', authorize('user'), async (req, res) => {
         )
 
         const data = await response.json();
-        res.status(200).json(data.value);
+
+        const sorted = data.value.sort((a, b) => a.name.localeCompare(b.name));
+
+        res.status(200).json(sorted);
     } catch (error) {
         console.log(error)
         res.status(500).json({ message: "Internal server error" })
@@ -27,7 +30,8 @@ router.get('/get-cities/:provinceId', authorize('user'), async (req, res) => {
         )
 
         const data = await response.json()
-        res.status(200).json(data.value);
+        const sorted = data.value.sort((a, b) => a.name.localeCompare(b.name))
+        res.status(200).json(sorted);
     } catch (error) {
         console.log(error)
         res.status(500).json({ message: "Internal server error" })
@@ -42,7 +46,8 @@ router.get('/get-district/:cityId', authorize('user'), async (req, res) => {
         )
 
         const data = await response.json()
-        res.status(200).json(data.value)
+        const sorted = data.value.sort((a, b) => a.name.localeCompare(b.name))
+        res.status(200).json(sorted)
     } catch (error) {
         console.log(error)
         res.status(500).json({ message: "Internal server error" })
@@ -51,13 +56,14 @@ router.get('/get-district/:cityId', authorize('user'), async (req, res) => {
 
 router.get('/get-village/:districtId', authorize('user'), async (req, res) => {
     try {
-        const body = { disrictId: 367201 }
+        const body = { disrictId: "36.72.01" }
         const response = await fetch(
-            `https://api.binderbyte.com/wilayah/kelurahan?api_key=${API_KEY}&id_kecamatan=${req.params.disrictId}`
+            `https://api.binderbyte.com/wilayah/kelurahan?api_key=${API_KEY}&id_kecamatan=${req.params.districtId}`
         )
 
         const data = await response.json()
-        res.status(200).json(data.value)
+        const sorted = data.value.sort((a, b) => a.name.localeCompare(b.name))
+        res.status(200).json(sorted)
     } catch (error) {
         console.log(error)
         res.status(500).json({ message: "Internal server error" })
@@ -68,27 +74,27 @@ router.post('/add', authorize('user'), async (req, res) => {
     try {
         const {  
             id,
-            provinceId, 
-            provinceName, 
-            cityId, 
-            cityName, 
-            districtId, 
-            districtName, 
-            villageId,
-            villageName, 
+            province_id, 
+            province, 
+            city_id, 
+            city, 
+            district_id, 
+            district, 
+            village_id,
+            village, 
             detail
         } = req.body
 
         if (id) {
             const data = await client.query(
-                `UPDATE adresses SET province_id = $1, province_name = $2, city_id = $3, city_name = $4, district_id = $5, district_name = $6, village_id = $7, village_name = $8, detail = $9 WHERE id = $10 RETURNING *`,
-                [provinceId, provinceName, cityId, cityName, districtId, districtName, villageId, villageName, detail, id]
+                `UPDATE addresses SET province_id = $1, province_name = $2, city_id = $3, city_name = $4, district_id = $5, district_name = $6, village_id = $7, village_name = $8, detail = $9 WHERE id = $10 RETURNING *`,
+                [province_id, province, city_id, city, district_id, district, village_id, village, detail, id]
             )
             res.status(201).json({ message: "Address updated succesfully", result: data.rows[0] })
         } else {
             const data = await client.query(
                 `INSERT INTO addresses (user_id, province_id, province_name, city_id, city_name, district_id, district_name, village_id, village_name, detail) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10) RETURNING *`,
-                [req.user.id, provinceId, provinceName, cityId, cityName, districtId, districtName, villageId, villageName, detail]
+                [req.user.id, province_id, province, city_id, city, district_id, district, village_id, village, detail]
             )
             res.status(201).json({ message: "Address added succesfully", result: data.rows[0] })
         }

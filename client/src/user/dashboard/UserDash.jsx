@@ -1,9 +1,85 @@
 import React from "react";
 import Layout from "../layout/Layout";
+import { useSelector } from "react-redux";
+import { useState } from "react";
+import { useUpdateUserMutation } from "../../api/request/Users";
+import { useLoadUserMutation } from "../../api/request/Auth";
+import { useEffect } from "react";
+import { toast } from "react-toastify";
+import Address from "./Address";
 
 const UserDash = () => {
+  const { user } = useSelector((state) => state.auth);
+  const [updateUser, { data, isLoading, isSuccess, error, reset }] = useUpdateUserMutation();
+  const [loadUser] = useLoadUserMutation();
+
+  const [formData, setFormData] = useState({
+    name: "",
+    email: "",
+    phone: "",
+    oldPassword: "",
+    newPassword: "",
+    province_id: "",
+    province: "",
+    city_id: "",
+    city: "",
+    district_id: "",
+    district: "",
+    village_id: "",
+    village: "",
+    detail: "",
+  });
+
+  useEffect(() => {
+    setFormData({
+      name: user?.name || "",
+      email: user?.email || "",
+      phone: user?.phone || "",
+      oldPassword: "",
+      newPassword: "",
+      province_id: user?.address?.province_id || "",
+      province: user?.address?.province_name || "",
+      city_id: user?.address?.city_id || "",
+      city: user?.address?.city_name || "",
+      district_id: user?.address?.district_id || "",
+      district: user?.address?.district_name || "",
+      village_id: user?.address?.village_id || "",
+      village: user?.address?.village_name || "",
+      detail: user?.address?.detail || "",
+    })
+  }, [user])
+
+  const updateProfile = (e) => {
+    e.preventDefault();
+    const data = formData;
+
+    updateUser(data);
+  }
+
+  useEffect(() => {
+    if(isSuccess) {
+      toast.success(data?.message || "Update Berhasil")
+      reset();
+
+      setFormData({
+        name: "",
+        email: "",
+        phone: "",
+        oldPassword: "",
+        newPassword: "",
+      })
+
+      loadUser();
+    }
+
+    if(error) {
+      toast.error(error?.data?.message || "Terjadi Kesalahan")
+      reset();
+    }
+  }, [isSuccess, error, data])
+
   return (
-    <Layout>
+    <Layout username={user?.name}>
       <div className="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom bg-white border p-2 rounded shadow">
         <h1 className="h2">Dashboard</h1>
       </div>
@@ -18,6 +94,8 @@ const UserDash = () => {
                 id="name"
                 placeholder="Username"
                 className="form-control"
+                value={formData.name || ""}
+                onChange={(e) => setFormData({ ...formData, name: e.target.value })}
               />
 
               <input
@@ -26,6 +104,8 @@ const UserDash = () => {
                 id="email"
                 placeholder="Email"
                 className="form-control"
+                value={formData.email || ""}
+                onChange={(e) => setFormData({ ...formData, email: e.target.value })}
               />
 
               <input
@@ -34,6 +114,8 @@ const UserDash = () => {
                 id="phone"
                 placeholder="No Whatsapp"
                 className="form-control"
+                value={formData.phone || ""}
+                onChange={(e) => setFormData({ ...formData, phone: e.target.value })}
               />
 
               <input
@@ -42,6 +124,8 @@ const UserDash = () => {
                 id="oldPassword"
                 placeholder="Password Lama"
                 className="form-control"
+                value={formData.oldPassword || ""}
+                onChange={(e) => setFormData({ ...formData, oldPassword: e.target.value })}
               />
 
               <input
@@ -50,59 +134,17 @@ const UserDash = () => {
                 id="newPassword"
                 placeholder="Password Baru"
                 className="form-control"
+                value={formData.newPassword || ""}
+                onChange={(e) => setFormData({ ...formData, newPassword: e.target.value })}
               />
 
               <div className="text-end">
-                <button className="btn btn-success">Update</button>
+                <button className="btn btn-success" onClick={updateProfile} disabled={isLoading}>Update</button>
               </div>
             </form>
           </div>
           <div className="col-lg-6 col-12">
-            <form className="d-flex flex-column gap-3">
-              <select name="provinces" id="province" className="form-select">
-                <option value="" hidden>
-                  Provinsi
-                </option>
-                <option value="">Jawa Barat</option>
-                <option value="">Jawa Timur</option>
-              </select>
-
-              <select name="cities" id="city" className="form-select">
-                <option value="" hidden>
-                  Kota / Kabupaten
-                </option>
-                <option value="">Kab Bogor</option>
-                <option value="">Kota Bogor</option>
-              </select>
-
-              <select name="cities" id="city" className="form-select">
-                <option value="" hidden>
-                  Kecamatan
-                </option>
-                <option value="">Kecamatan 1</option>
-                <option value="">Kecamatan 2</option>
-              </select>
-
-              <select name="cities" id="city" className="form-select">
-                <option value="" hidden>
-                  Desa
-                </option>
-                <option value="">Desa 1</option>
-                <option value="">Desa 2</option>
-              </select>
-
-              <textarea
-                name="address"
-                id="address"
-                className="form-control"
-                placeholder="Alamat Lengkap"
-                rows={4}
-              ></textarea>
-
-              <div className="text-end">
-                <button className="btn btn-success">Update</button>
-              </div>
-            </form>
+            <Address user={user}/>
           </div>
         </div>
       </div>
