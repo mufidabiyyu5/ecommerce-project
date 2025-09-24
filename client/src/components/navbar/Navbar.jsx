@@ -6,8 +6,8 @@ const Navbar = ({ setSearch }) => {
   const navigate = useNavigate();
   const location = useLocation();
   const [isSmall, setSmall] = useState(window.innerWidth > 768);
-  const {user} = useSelector(state => state.auth)
-  const isUser = user;
+  const { user, isSignIn } = useSelector(state => state.auth)
+  const isUser = isSignIn;
   const home = location.pathname;
 
   useEffect(() => {
@@ -77,7 +77,7 @@ const Navbar = ({ setSearch }) => {
                 <div className="vr"></div>
                 <button
                   className="btn btn-light"
-                  onClick={() => navigate("/user-dashboard")}
+                  onClick={() => user.level == 'user' ? navigate("/user-dashboard") : navigate("/admin-dashboard")}
                 >
                   Dashboard
                 </button>

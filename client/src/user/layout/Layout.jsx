@@ -1,12 +1,16 @@
 import React from "react";
 import { Menus } from "./Menus";
 import { useNavigate } from "react-router-dom";
+import { useSelector } from "react-redux";
+import Protected from "../../components/auth/Protected";
 
 const Layout = ({ children, username }) => {
   const navigate = useNavigate();
+  const { user } = useSelector(state => state.auth);
 
   return (
     <div className="min-vh-100 bg-light">
+      <Protected roles={['user']}/>
       <div className="container-fluid bg-info">
         <header className="navbar navbar-dark sticky-top flex-md-nowrap p-2">
           <a className="navbar-brand col-md-3 col-lg-2 me-0 px-5" href="#">

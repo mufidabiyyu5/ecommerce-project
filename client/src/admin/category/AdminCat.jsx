@@ -1,9 +1,18 @@
-import React from "react";
+import React, { useState } from "react";
 import Layout from "../layout/Layout";
 import TableComponent from "../table/TableComponent";
 import { categories } from "../../Data";
+import { useGetCategoriesQuery } from "../../api/request/Category";
 
 const AdminCat = () => {
+  const [search, setSearch] = useState("");
+  const [page, setPage] = useState(1);
+  const [limit, setLimit] = useState(10);
+
+  const {data: rawData = {}} = useGetCategoriesQuery({ search, page, limit })
+
+  console.log(rawData)
+
   return (
     <Layout pageName={"Daftar Kategori"}>
       <TableComponent height={"75vh"}>

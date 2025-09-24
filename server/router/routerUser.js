@@ -49,7 +49,7 @@ router.post('/sign-in', async (req, res) => {
 
                 if(result){
                     const token = jwt.sign({ id: user.id, level: user.level }, process.env.privateKey, { expiresIn: '7d' })
-                    res.cookie("token", token, { httpOnly: true });
+                    res.cookie("token", token, { httpOnly: true, secure: process.env.ENV === "production", maxAge: 7 * 24 * 60 * 60 * 1000 });
                     res.status(200).json({ message: "Sign In successfully", user })
                 } else {
                     res.status(404).json({ message: "Wrong password!" })

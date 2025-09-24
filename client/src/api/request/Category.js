@@ -10,9 +10,10 @@ export const Category = createApi({
     tagTypes: ["categories"],
     endpoints: (builder) => ({
         getCategories: builder.query({
-            query: () => ({
+            query: ({search, page, limit}) => ({
                 url: "/list",
-                method: "GET"
+                method: "GET",
+                params: {search, page, limit}
             }),
             providesTags: ["categories"],
         })

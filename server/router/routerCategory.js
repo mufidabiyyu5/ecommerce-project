@@ -24,9 +24,23 @@ router.post('/add', authorize("admin"), async (req, res) => {
 
 router.get('/list', async (req, res) => {
     try {
-        const data = await client.query(`SELECT * FROM categories`);
+        let { search = '', page = 1, limit = 10 } = req.query;
+        const offset = (page - 1) * limit
+        
+        let query = 'SELECT * FROM categories WHERE name ILIKE $1'
+        let countQuery = `SELECT COUNT(*) AS total FROM categories WHERE name ILIKE $1`
+        let queryParams = [`%${search}%`]
 
-        res.status(200).json({ message: "Categories retrieved successfully", result: data.rows });
+        query += ` ORDER BY name ASC LIMIT $${queryParams.length + 1} 
+        OFFSET $${queryParams.length + 2}`
+        queryParams.push(limit, offset)
+
+        const data = await client.query(query, queryParams);
+        const countData = await client.query(countQuery, queryParams.slice(0, queryParams.length - 2))
+        const totalCategories = parseInt(countData.rows[0].total)
+        const totalPages = Math.ceil(totalCategories / limit);
+
+        res.status(200).json({ message: "Categories retrieved successfully", result: data.rows, page, limit, totalCategories, totalPages });
     } catch (error) {
         console.log("Error retrieving categories:", error);
         res.status(500).json({ message: "Internal server error" });
